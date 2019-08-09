@@ -6,7 +6,7 @@ export const SDK = {
       return glass.data;
       },
   subscribe : function(symbol)  {
-      const {EventBus} = require('./EventBus')
+      const {EventBus} = require('./EventBus');
       let ws = new WebSocket(`${process.env.VUE_APP_API_BINANCE_WS}${symbol.toLowerCase()}@depth`);
       return ws     // возвращаем сокет
   }
