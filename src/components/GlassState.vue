@@ -2,8 +2,8 @@
   <div class="content">
     <div class="symbol-type">Symbol = {{ symbol }}</div>
     <div class="wrapper">
-      <tableComp :items="glass.bids"></tableComp>
-      <tableComp :items="glass.asks"></tableComp>
+      <tableComp :items="glass.bids">Bids</tableComp>
+      <tableComp :items="glass.asks">Asks</tableComp>
     </div>
   </div>
 </template>
@@ -22,7 +22,7 @@ export default {
     ws : null
   }),
   async created() {
-    this.snapshot();
+    await this.snapshot();
     this.wsSubscribe();
     this.$bus.$on("symbol",  symbol => {
       this.symbol = symbol;
@@ -41,7 +41,6 @@ export default {
       this.ws = this.$sdk.subscribe(this.symbol);
       this.ws.onmessage = async event => {            // запускаем callBack при получении сообщений
         let data = JSON.parse(event.data);            // арсим данные в Json
-        console.log(data.s);                          // Это для тестов, смотрим что получаем
         let [asksAdd, bidsAdd] = [                    // создаём массивы новых данных
           data.a.filter(item => item[1] != 0),        // отфильтровываем 0-ые сделки
           data.b.filter(item => item[1] != 0)         // отфильтровываем 0-ые сделки
@@ -65,7 +64,7 @@ export default {
   flex-direction: row;
   align-items: center;
   margin: 0;
-  padding: 10px 0 0 0;
+  /*padding: 10px 0 0 0;*/
 }
 .symbol-type {
   text-align: center;
