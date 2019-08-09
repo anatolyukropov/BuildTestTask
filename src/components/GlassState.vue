@@ -24,24 +24,29 @@ export default {
   async created() {
     let glass = await this.$sdk.get(this.symbol);   // делаем снепшот
     this.glass = glass;                             // отрисовываем снепшот
-    this.ws = this.$sdk.subscribe(this.symbol);     // подписываемся на получение diff
-    this.ws.onmessage = async event => {            // запускаем callBack при получении сообщений
-      let data = JSON.parse(event.data);            // арсим данные в Json
-      console.log(data.s);                          // Это для тестов, смотрим что получаем
-      let [asksAdd, bidsAdd] = [                    // создаём массивы новых данных
-        data.a.filter(item => item[1] != 0),
-        data.b.filter(item => item[1] != 0)
-      ];
-      this.glass.asks.splice(0, asksAdd.length);    // удаляем из буффера asks столько данных сколько пришло
-      this.glass.bids.splice(0, bidsAdd.length);    // удаляем из буффера bids столько данных сколько пришло
-      this.glass.asks = [...this.glass.asks, ...asksAdd]; // дописываем полученные данные в буфер asks
-      this.glass.bids = [...this.glass.bids, ...bidsAdd]; // дописываем полученные данные в буфер bids
-    };
+    this.wsSubscribe();
     this.$bus.$on("symbol",  symbol => {
       this.symbol = symbol;
       this.ws.close();
-      this.ws = this.$sdk.subscribe(this.symbol);
+      this.wsSubscribe();
     });
+  },
+  methods : {
+    wsSubscribe () {
+      this.ws = this.$sdk.subscribe(this.symbol);
+      this.ws.onmessage = async event => {            // запускаем callBack при получении сообщений
+        let data = JSON.parse(event.data);            // арсим данные в Json
+        console.log(data.s);                          // Это для тестов, смотрим что получаем
+        let [asksAdd, bidsAdd] = [                    // создаём массивы новых данных
+          data.a.filter(item => item[1] != 0),        // отфильтровываем 0-ые сделки
+          data.b.filter(item => item[1] != 0)         // отфильтровываем 0-ые сделки
+        ];
+        this.glass.asks.splice(0, asksAdd.length);    // удаляем из буффера asks столько данных сколько пришло
+        this.glass.bids.splice(0, bidsAdd.length);    // удаляем из буффера bids столько данных сколько пришло
+        this.glass.asks = [...this.glass.asks, ...asksAdd]; // дописываем полученные данные в буфер asks
+        this.glass.bids = [...this.glass.bids, ...bidsAdd]; // дописываем полученные данные в буфер bids
+      };
+    }
   }
 };
 </script>
